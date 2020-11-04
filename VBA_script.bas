@@ -1,0 +1,108 @@
+Attribute VB_Name = "Module1"
+Sub StockAnalysis()
+
+' Identify variables
+Dim ws As Worksheet
+Dim wb As Workbook
+Dim Ticker As String
+Dim Yearly_Change As Double
+Dim Percent_Change As Double
+Dim Total_Stock_Volume As Long
+Dim Opening_Price As Double
+Dim Closing_Price As Double
+
+'Loop through all the worksheets in the workbook
+For Each ws In Worksheets
+
+Dim Range_Count As Double
+Dim Summary_Table_Row As Double
+Summary_Table_Row = 2
+
+'Set row count for the workbook (all sheets)
+Dim Lastrow As Long
+
+    'Loop through all sheets to find last cell that is not empty
+        Lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    'Create headers
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+    
+     'Grab Opening Price
+            Opening_Price = ws.Cells(2, 3).Value
+    
+    'Loop through stocks
+    For i = 2 To Lastrow
+        
+        If ws.Cells(i, 1).Value = ws.Cells(i + 1, 1) Then
+        Range_Count = Range_Count + 1
+
+         'Add to Stock Total
+         Stock_Volume = Stock_Volume + ws.Cells(i, 7).Value
+         
+         'Check if we are still within the same ticker, if it is not...
+        Else 'ws.Cells(i + 1).Value <> ws.Cells(i, 1).Value Then
+            
+            'Set Ticker
+            Ticker = ws.Cells(i, 1).Value
+            
+            'Add to Stock volume
+            Stock_Volume = Stock_Volume + ws.Cells(i, 7).Value
+            
+             'Grab Closing Price
+            Closing_Price = ws.Cells(i, 6).Value
+            
+            'Calculating yearly change
+            Yearly_Change = Closing_Price - Opening_Price
+            
+            'Print Ticker to the Summary Table
+            ws.Range("I" & Summary_Table_Row).Value = Ticker
+            
+            'Print Stock Volume
+            'ws.Range("L" + Summary_Table_Row).Value = Stock_Volume
+            ws.Cells(Summary_Table_Row, 12).Value = Stock_Volume
+            
+            'Print the Yearly Change to the summary table
+            'ws.Range("J" + Summary_Table_Row).Value = Yearly_Change
+            ws.Cells(Summary_Table_Row, 10).Value = Yearly_Change
+            
+            'Color fill yearly price change: Red for neg, green for pos
+            If (Yearly_Change > 0) Then
+                ws.Cells(Summary_Table_Row, 10).Interior.ColorIndex = 4
+            
+            Else
+                ws.Cells(Summary_Table_Row, 10).Interior.ColorIndex = 3
+                
+            End If
+            
+            If Opening_Price = 0 Then
+                Percent_Change = 0
+            
+            Else
+            'Print the percent change to the summary table
+                Percent_Change = ((Closing_Price - Opening_Price) / Opening_Price)
+                        
+            End If
+            'ws.Range("K" & Summary_Table_Row).Value = (Percent_Change)
+                ws.Cells(Summary_Table_Row, 11).Value = Percent_Change
+                ws.Cells(Summary_Table_Row, 11).NumberFormat = "0.00%"
+            
+                'Add one to the summary table row
+                Summary_Table_Row = Summary_Table_Row + 1
+            
+                'Reset Volume Total
+            Stock_Volume = 0
+            
+            'Finding opening price for each ticker
+            Opening_Price = ws.Cells(i + 1, 3).Value
+           
+                            
+        End If
+        
+    Next i
+
+Next ws
+
+End Sub
